@@ -56,7 +56,6 @@ class GpsBloc extends Bloc<GpsEvent, GpsState> {
 
   Future<void> askGpsAccess() async {
     final status = await Permission.location.request();
-    print('status $status');
     switch (status) {
       case PermissionStatus.granted:
         add(GpsAndPermissionEvent(
