@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:maps_app/blocs/location/location_bloc.dart';
+import 'package:maps_app/views/map_view.dart';
+import 'package:maps_app/blocs/blocs.dart';
+import 'package:maps_app/widgets/widgets.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -29,25 +30,39 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<LocationBloc, LocationState>(
-        builder: (context, state) {
-          if (state.lastKnowLocation == null) {
-            return const Center(
-              child: Text('Please wait...'),
+        body: BlocBuilder<LocationBloc, LocationState>(
+          builder: (context, state) {
+            if (state.lastKnowLocation == null) {
+              return const Center(
+                child: Text('Please wait...'),
+              );
+            }
+            return SingleChildScrollView(
+              child: Stack(
+                children: [
+                  Center(
+                    child: MapView(initialLocation: state.lastKnowLocation!),
+                  ),
+                  // Positioned(
+                  //   top: 15,
+                  //   child: IconButton(
+                  //     onPressed: () {
+                  //       Navigator.pop(context);
+                  //     },
+                  //     icon: const Icon(Icons.arrow_back_ios),
+                  //   ),
+                  // ),
+                ],
+              ),
             );
-          }
-          CameraPosition initialCameraPosition = CameraPosition(
-            target: state.lastKnowLocation!,
-            zoom: 15,
-          );
-          return Center(
-            child: GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: initialCameraPosition,
-            ),
-          );
-        },
-      ),
-    );
+          },
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: const [
+            BtnCurrentLocation(),
+          ],
+        ));
   }
 }
