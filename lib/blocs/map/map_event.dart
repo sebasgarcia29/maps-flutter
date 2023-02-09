@@ -15,3 +15,15 @@ class OnMapInitilizedEvent extends MapEvent {
   @override
   List<Object> get props => [controller];
 }
+
+class OnStopFollowingUserMap extends MapEvent {}
+
+class OnStartFollowingUserMap extends MapEvent {}
+
+class UpdateUserPolylineEvent extends MapEvent {
+  final List<LatLng> points;
+
+  const UpdateUserPolylineEvent(this.points);
+}
+
+class OnToggleMyRoute extends MapEvent {}

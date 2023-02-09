@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:maps_app/views/map_view.dart';
 import 'package:maps_app/blocs/blocs.dart';
 import 'package:maps_app/widgets/widgets.dart';
@@ -31,29 +32,32 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocBuilder<LocationBloc, LocationState>(
-          builder: (context, state) {
-            if (state.lastKnowLocation == null) {
+          builder: (context, locationState) {
+            if (locationState.lastKnowLocation == null) {
               return const Center(
                 child: Text('Please wait...'),
               );
             }
-            return SingleChildScrollView(
-              child: Stack(
-                children: [
-                  Center(
-                    child: MapView(initialLocation: state.lastKnowLocation!),
+            return BlocBuilder<MapBloc, MapState>(
+              builder: (context, stateMap) {
+                Map<String, Polyline> polylines = Map.from(stateMap.polylines);
+                if (!stateMap.isShowMyRoute) {
+                  polylines.removeWhere(((key, value) => key == 'myRoute'));
+                }
+
+                return SingleChildScrollView(
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: MapView(
+                          initialLocation: locationState.lastKnowLocation!,
+                          polylines: polylines.values.toSet(),
+                        ),
+                      ),
+                    ],
                   ),
-                  // Positioned(
-                  //   top: 15,
-                  //   child: IconButton(
-                  //     onPressed: () {
-                  //       Navigator.pop(context);
-                  //     },
-                  //     icon: const Icon(Icons.arrow_back_ios),
-                  //   ),
-                  // ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
@@ -61,6 +65,8 @@ class _MapScreenState extends State<MapScreen> {
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: const [
+            BtnToogleUserRoute(),
+            BtnFollowUser(),
             BtnCurrentLocation(),
           ],
         ));
