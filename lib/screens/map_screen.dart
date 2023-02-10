@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:maps_app/views/map_view.dart';
 import 'package:maps_app/blocs/blocs.dart';
 import 'package:maps_app/widgets/widgets.dart';
@@ -48,12 +49,12 @@ class _MapScreenState extends State<MapScreen> {
                 return SingleChildScrollView(
                   child: Stack(
                     children: [
-                      Center(
-                        child: MapView(
-                          initialLocation: locationState.lastKnowLocation!,
-                          polylines: polylines.values.toSet(),
-                        ),
+                      MapView(
+                        initialLocation: locationState.lastKnowLocation!,
+                        polylines: polylines.values.toSet(),
                       ),
+                      const SearchBar(),
+                      const ManualMarker(),
                     ],
                   ),
                 );
