@@ -58,7 +58,10 @@ class _BtnConfirm extends StatelessWidget {
     final LocationBloc locationBloc = BlocProvider.of<LocationBloc>(context);
     final MapBloc mapBloc = BlocProvider.of<MapBloc>(context);
 
+    GlobalKey _scaffold = GlobalKey();
+
     return FadeInUp(
+      key: _scaffold,
       duration: const Duration(milliseconds: 300),
       child: MaterialButton(
         minWidth: size.width - 120,
@@ -74,10 +77,10 @@ class _BtnConfirm extends StatelessWidget {
 
           showLoadingMessage(context);
 
-          searchBloc.add(OnDisabledManualMarker());
-
           final destination = await searchBloc.getCoorStartToEnd(start, end);
           await mapBloc.drawRoutePolyline(destination);
+
+          searchBloc.add(OnDisabledManualMarker());
           // ignore: use_build_context_synchronously
           Navigator.pop(context);
         },
