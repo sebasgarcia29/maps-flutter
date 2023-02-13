@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:maps_app/blocs/blocs.dart';
+import 'package:maps_app/helpers/helpers.dart';
 import 'package:maps_app/models/models.dart';
 
 import 'package:maps_app/themes/uber.dart';
@@ -43,8 +44,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<OnToggleMyRoute>((event, emit) =>
         emit(state.copyWith(isShowMyRoute: !state.isShowMyRoute)));
 
-    on<DisplayPolylinesEvent>(
-        (event, emit) => emit(state.copyWith(polylines: event.polylines)));
+    on<DisplayPolylinesEvent>((event, emit) => emit(state.copyWith(
+          polylines: event.polylines,
+          markers: event.markers,
+        )));
   }
 
   void _onInitMap(OnMapInitilizedEvent event, Emitter<MapState> emit) {
@@ -89,9 +92,61 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       endCap: Cap.roundCap,
       width: 5,
     );
+
+    double kms = destination.distance / 1000;
+    kms = (kms * 100).floorToDouble();
+    kms /= 100; //kms / 100;
+
+    int tripDuration = (destination.duration / 60).floorToDouble().toInt();
+
+    //CustomMarker
+
+    // final startMaker = await getAssetImageMarker();
+    final startMaker = await getStartCustomMarker(
+      duration: tripDuration,
+      location: 'My location',
+    );
+    // final endMaker = await getNetworkImageMarker();
+    final endMaker = await getEndCustomMarker(
+      kilometers: kms.toInt(),
+      destination: destination.endPlace.placeName,
+    );
+
+    final startMarker = Marker(
+      markerId: const MarkerId('start'),
+      position: destination.points.first, // destination.points[0],
+      infoWindow: InfoWindow(
+        title: 'Start',
+        snippet: 'Kms: $kms - Duration: $tripDuration',
+      ),
+      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      icon: startMaker,
+      anchor: const Offset(0.1, 1),
+    );
+    final endMarker = Marker(
+      markerId: const MarkerId('end'),
+      position: destination
+          .points.last, // destination.points[destination.points.length - 1],
+      infoWindow: InfoWindow(
+        title: destination.endPlace.text,
+        snippet: destination.endPlace.placeName,
+      ),
+      // anchor: const Offset(0, 0),
+      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose),
+      icon: endMaker,
+    );
+
     final currentPolylines = Map<String, Polyline>.from(state.polylines);
     currentPolylines['route'] = myRoute;
-    add(DisplayPolylinesEvent(currentPolylines));
+    final currentMarkers = Map<String, Marker>.from(state.markers);
+    currentMarkers['start'] = startMarker;
+    currentMarkers['end'] = endMarker;
+    add(DisplayPolylinesEvent(currentPolylines, currentMarkers));
+
+    await Future.delayed(
+      const Duration(milliseconds: 800),
+      () => {_mapController?.showMarkerInfoWindow(const MarkerId('end'))},
+    );
   }
 
   @override
